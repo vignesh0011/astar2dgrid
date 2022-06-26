@@ -1,40 +1,41 @@
-# A* Path Finding Algorithm for 2D Grid World
+## EX.NO: 04
+## DATE: 17-05-2022
+## <p align="center">A* Path Finding Algorithm for 2D Grid World</P>
+
 ## AIM
 
 To develop a code to find the route from the source to the destination point using A* algorithm for 2D grid world.
 
 ## THEORY
-Informally speaking, A* Search algorithms, unlike other traversal techniques, it has “brains”. What it means is that it is really a smart algorithm which separates it from the other conventional algorithms. This fact is cleared in detail in below sections. 
-And it is also worth mentioning that many games and web-based maps use this algorithm to find the shortest path very efficiently (approximation). 
-A* search finds the shortest path through a search space to goal state using heuristic function. This technique finds minimal cost solutions and is directed to a goal state called A* search. In A*, the * is written for optimality purpose.
+We try to use the A* algorithm to navigate through a 2D Gird environment. We provide the algorithm with the inital and goal states, and then let the algorithm calculate the Heuristic function to decide the path nodes. And finally, we return the path nodes to the user. 
 
 ## DESIGN STEPS
 
 ### STEP 1:
-Build a 2D grid world with initial state , goal state and obstacles.
-
+Build a 2D grid world with initial state and goal state
+<br>Initial State: (2,2)
+<br>Goal State: (5,8)
 ### STEP 2:
-Set the initial and goal state:
-Initial State: (1,3)
-Goal State: ()
-
-### STEP 3:
 Mention the Obstacles in the 2D grid World
-
-### STEP 4:
+### STEP 3:
 Define the function for the distance function for the heuristic function
-
-### STEP 5:
+### STEP 4:
 Pass all the values to the GirdProblem, and print the solution path.
 
-## Draw the 2D
+## Draw the 2D 
 
-![WhatsApp Image 2022-05-17 at 9 42 09 PM](https://user-images.githubusercontent.com/75234646/168860681-0e55a193-d4df-45a2-b9b0-83b9f360b972.jpeg)
+![image](https://user-images.githubusercontent.com/74660507/168845483-193a8e29-e30d-40c7-aac8-4da6cc7a60fe.png)
 
 
 ## PROGRAM
 
+```
+Name: M Vignesh
+Reg. No: 212220233002
+```
+
 ```python
+
 %matplotlib inline
 import matplotlib.pyplot as plt
 import random
@@ -45,6 +46,12 @@ from itertools import combinations
 import heapq
 
 class Problem(object):
+    """The abstract class for a formal problem. A new domain subclasses this,
+    overriding `actions` and `results`, and perhaps other methods.
+    The default heuristic is 0 and the default action cost is 1 for all states.
+    When yiou create an instance of a subclass, specify `initial`, and `goal` states 
+    (or give an `is_goal` method) and perhaps other keyword args for the subclass."""
+
     def __init__(self, initial=None, goal=None, **kwds): 
         self.__dict__.update(initial=initial, goal=goal, **kwds) 
         
@@ -61,8 +68,7 @@ class Problem(object):
         return '{0}({1}, {2})'.format(
             type(self).__name__, self.initial, self.goal)
             
-            
-  class Node:
+class Node:
     "A Node in a search tree."
     def __init__(self, state, parent=None, action=None, path_cost=0):
         self.__dict__.update(state=state, parent=parent, action=action, path_cost=path_cost)
@@ -73,11 +79,8 @@ class Problem(object):
         return 0 if self.parent is None else (1 + len(self.parent))
     def __lt__(self, other): 
         return self.path_cost < other.path_cost
-        
-        
-failure = Node('failure', path_cost=math.inf) 
-cutoff  = Node('cutoff',  path_cost=math.inf)    
-        
+failure = Node('failure', path_cost=math.inf) # Indicates an algorithm couldn't find a solution.
+cutoff  = Node('cutoff',  path_cost=math.inf) # Indicates iterative deepening search was cut off.        
 def expand(problem, node):
     "Expand a node, generating the children nodes."
     s = node.state
@@ -98,10 +101,8 @@ def path_states(node):
     "The sequence of states to get to this node."
     if node in (cutoff, failure, None): 
         return []
-    return path_states(node.parent) + [node.state]        
-        
-        
-  class PriorityQueue:
+    return path_states(node.parent) + [node.state]
+class PriorityQueue:
     """A queue in which the item with minimum f(item) is always popped first."""
 
     def __init__(self, items=(), key=lambda x: x): 
@@ -121,9 +122,8 @@ def path_states(node):
     
     def top(self): return self.items[0][1]
 
-    def __len__(self): return len(self.items)      
-        
- def best_first_search(problem, f):
+    def __len__(self): return len(self.items)
+def best_first_search(problem, f):
     "Search nodes with minimum f(node) value first."
     node = Node(problem.initial)
     frontier = PriorityQueue([node], key=f)
@@ -141,8 +141,6 @@ def path_states(node):
 
 def g(n): 
     return n.path_cost
-    
-    
 class GridProblem(Problem):
     """Finding a path on a 2D grid with obstacles. Obstacles are (x, y) cells."""
 
@@ -150,7 +148,7 @@ class GridProblem(Problem):
         Problem.__init__(self, initial=initial, goal=goal, 
                          obstacles=set(obstacles) - {initial, goal}, **kwds)
 
-    directions = [(-1, 1), (1, -1), (1, -1),
+    directions = [(-1, -1), (0, -1), (1, -1),
                   (-1, 0),           (1,  0),
                   (-1, +1), (0, +1), (1, +1)]
     
@@ -165,43 +163,32 @@ class GridProblem(Problem):
         return action if action not in self.obstacles else state
     
     def actions(self, state):
-        """You can move one cell in any of `directions` to a non-obstacle cell."""
-        
         x,y = state
-        return {(x+dx,y+dy) for(dx,dy) in self.directions}-self.obstacles
-
-
+        return {(x + dx, y+dy) for (dx, dy) in self.directions} - self.obstacles
+   
 def straight_line_distance(A, B):
     "Straight-line distance between two points."
+    return sum(abs(a-b)**2 for (a,b) in zip (A,B))**0.5
     
-    return sum(abs(a-b)*2 for(a,b) in zip(A,B))*0.5
-
 def g(n): 
     return n.path_cost
-        
-       
- def astar_search(problem, h=None):
+def astar_search(problem, h=None):
     """Search nodes with minimum f(n) = g(n) + h(n)."""
     h = h or problem.h
-    return best_first_search(problem, f=lambda n: g(n) + h(n))
-
-
-obstacles = {(1,9),(2,9),(3,3),(3,6),(4,5),(5,4),(5,5),(6,9),(6,10),(7,7),(8,1),(8,4),(8,5),(9,1),(10,6)}
-
-grid1 = GridProblem(initial=(1,3), goal =(9,9) ,obstacles=obstacles)      
-
-s1 = astar_search(grid1)
-
-path_states(s1)
-
+    return best_first_search(problem, f=lambda n: g(n) + h(n)) 
+grid1 = GridProblem(initial=(1,1), goal =(50,50) ,obstacles={(1,3),(2,3),(2,4),(3,4),(4,2),(5,3),(5,4),(6,3),(6,4),(7,4),(7,3)})    
+solution1 = astar_search(grid1)
+path_states(solution1)
 
 ```
+
+
 ## OUTPUT:
 
-![Screenshot (69)](https://user-images.githubusercontent.com/75234646/168859268-afe1505f-6a2e-40db-9cb9-f891dde621ec.png)
+![image](https://user-images.githubusercontent.com/74660507/168841752-256a01c1-b9ed-48ca-9a46-8b62caca3f87.png)
+
 
 The algorithm is able to find the solution path for the given problem. But the solution path, might not be the shortest path to reach the goal state.
-It is better that best first search.
 
 ## RESULT:
 Hence, A* Algorithm was implemented to find the route from the source to the destination point in a 2D gird World.
